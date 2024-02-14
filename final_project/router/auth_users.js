@@ -52,7 +52,7 @@ regd_users.post('/login', (req, res) => {
 regd_users.put('/auth/review/:isbn', (req, res) => {
   const { text, rating } = req.body
   if (!text && !rating) {
-    return res.status(400).json({message: 'Missing review text and rating!'})
+    return res.status(400).json({ message: 'Missing review text and rating!' })
   }
   const isbn = +req.params.isbn
   const username = req?.user?.data
@@ -70,10 +70,28 @@ regd_users.put('/auth/review/:isbn', (req, res) => {
         text,
         rating,
       }
-      return res.json({message: 'New user review has been added!'})
+      return res.json({ message: 'New user review has been added!' })
     }
   } else {
-    return res.status(404).json({message: 'Cannot find a book matching input isbn'})
+    return res
+      .status(404)
+      .json({ message: 'Cannot find a book matching input isbn' })
+  }
+})
+
+regd_users.delete('/auth/review/:isbn', (req, res) => {
+  const isbn = +req.params.isbn
+  const username = req?.user?.data
+  const book = books[isbn]
+  if (book) {
+    if (username in book.reviews) {
+      delete book.reviews[username]
+      res.json({message: 'User review has been deleted from book!'})
+    } else {
+      res.status(404).json({message: 'Could not find a review made by this user!'})
+    }
+  } else {
+    res.status(404).json({message: 'Could not find a book matching input isbn'})
   }
 })
 
