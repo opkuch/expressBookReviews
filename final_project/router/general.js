@@ -2,7 +2,9 @@ const express = require('express')
 let books = require('./booksdb.js')
 let isValid = require('./auth_users.js').isValid
 let users = require('./auth_users.js').users
+const axios = require('axios')
 const public_users = express.Router()
+
 public_users.post('/register', (req, res) => {
   const { username, password } = req.body
   if (username && password) {
@@ -74,5 +76,46 @@ public_users.get('/review/:isbn', function (req, res) {
     res.status(404).json({ message: 'Could not find a book matching the isbn' })
   }
 })
+
+// TASK 10, 11, 12, 13
+async function getBooks() {
+  try {
+    const response = await axios.get('http://localhost:5000')
+    const books = response.data
+    return books
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+async function getBookByISBN(isbn) {
+  try {
+    const response = await axios.get(`http://localhost:5000/isbn/${isbn}`)
+    const book = response.data
+    return book
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+async function getBookByAuthor(author) {
+  try {
+    const res = await axios.get(`http://localhost:5000/author/${author}`)
+    const book = res.data
+    return book
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+async function getBookByTitle(title) {
+  try {
+    const res = await axios.get(`http://localhost:5000/title/${title}`)
+    const book = res.data
+    return book
+  } catch (err) {
+    console.error(err)
+  }
+}
 
 module.exports.general = public_users
