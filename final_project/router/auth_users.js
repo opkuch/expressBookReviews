@@ -50,7 +50,31 @@ regd_users.post('/login', (req, res) => {
 
 // Add a book review
 regd_users.put('/auth/review/:isbn', (req, res) => {
-  return res.status(300).json({ message: 'Yet to be implemented' })
+  const { text, rating } = req.body
+  if (!text && !rating) {
+    return res.status(400).json({message: 'Missing review text and rating!'})
+  }
+  const isbn = +req.params.isbn
+  const username = req?.user?.data
+  const book = books[isbn]
+  if (book) {
+    const reviewers = Object.keys(book.reviews)
+    const reviewer = reviewers.filter((reviewer) => reviewer === username)[0]
+    if (reviewer) {
+      const userReview = book.reviews[reviewer]
+      userReview.text = text
+      userReview.rating = rating
+      return res.json({ message: 'User review has been updated!' })
+    } else {
+      book.reviews[username] = {
+        text,
+        rating,
+      }
+      return res.json({message: 'New user review has been added!'})
+    }
+  } else {
+    return res.status(404).json({message: 'Cannot find a book matching input isbn'})
+  }
 })
 
 module.exports = {
