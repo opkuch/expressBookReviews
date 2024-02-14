@@ -21,7 +21,7 @@ public_users.post('/register', (req, res) => {
 
 // Get the book list available in the shop
 public_users.get('/', function (req, res) {
-  return res.send(books)
+  return res.send({ books })
 })
 
 // Get book details based on ISBN
@@ -42,7 +42,7 @@ public_users.get('/author/:author', function (req, res) {
     (book) => book?.author === author
   )
   if (filtered_books_by_author.length > 0) {
-    return res.send(filtered_books_by_author)
+    return res.send({ bookbyauthor: filtered_books_by_author })
   } else {
     return res
       .status(404)
@@ -57,7 +57,7 @@ public_users.get('/title/:title', function (req, res) {
     (book) => book?.title === title
   )
   if (filtered_books_by_title.length > 0) {
-    return res.send(filtered_books_by_title)
+    return res.send({ booksbytitle: filtered_books_by_title })
   } else {
     return res
       .status(404)
@@ -78,19 +78,22 @@ public_users.get('/review/:isbn', function (req, res) {
 })
 
 // TASK 10, 11, 12, 13
-async function getBooks() {
-  try {
-    const response = await axios.get('http://localhost:5000')
-    const books = response.data
-    return books
-  } catch (err) {
-    console.error(err)
-  }
+const SERVER_URL = 'http://localhost:5000'
+function getBooks(callback) {
+  axios
+    .get(SERVER_URL)
+    .then((res) => {
+      const books = res.data
+      callback(books)
+    })
+    .catch((err) => {
+      console.log(err)
+    })
 }
 
 async function getBookByISBN(isbn) {
   try {
-    const response = await axios.get(`http://localhost:5000/isbn/${isbn}`)
+    const response = await axios.get(`${SERVER_URL}/${isbn}`)
     const book = response.data
     return book
   } catch (err) {
@@ -100,7 +103,7 @@ async function getBookByISBN(isbn) {
 
 async function getBookByAuthor(author) {
   try {
-    const res = await axios.get(`http://localhost:5000/author/${author}`)
+    const res = await axios.get(`${SERVER_URL}/author/${author}`)
     const book = res.data
     return book
   } catch (err) {
@@ -110,7 +113,7 @@ async function getBookByAuthor(author) {
 
 async function getBookByTitle(title) {
   try {
-    const res = await axios.get(`http://localhost:5000/title/${title}`)
+    const res = await axios.get(`${SERVER_URL}/title/${title}`)
     const book = res.data
     return book
   } catch (err) {

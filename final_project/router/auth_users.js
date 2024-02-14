@@ -50,28 +50,18 @@ regd_users.post('/login', (req, res) => {
 
 // Add a book review
 regd_users.put('/auth/review/:isbn', (req, res) => {
-  const { text, rating } = req.body
-  if (!text && !rating) {
+  const { review } = req.query
+  if (!review) {
     return res.status(400).json({ message: 'Missing review text and rating!' })
   }
   const isbn = +req.params.isbn
   const username = req?.user?.data
   const book = books[isbn]
   if (book) {
-    const reviewers = Object.keys(book.reviews)
-    const reviewer = reviewers.filter((reviewer) => reviewer === username)[0]
-    if (reviewer) {
-      const userReview = book.reviews[reviewer]
-      userReview.text = text
-      userReview.rating = rating
-      return res.json({ message: 'User review has been updated!' })
-    } else {
-      book.reviews[username] = {
-        text,
-        rating,
-      }
-      return res.json({ message: 'New user review has been added!' })
-    }
+      book.reviews[username] = review
+      return res.send(
+        `${username} has added/modified a review for book with isbn ${isbn}`
+      )
   } else {
     return res
       .status(404)
@@ -86,12 +76,18 @@ regd_users.delete('/auth/review/:isbn', (req, res) => {
   if (book) {
     if (username in book.reviews) {
       delete book.reviews[username]
-      res.json({message: 'User review has been deleted from book!'})
+      res.send(
+        `${username} review has been deleted from book with isbn ${isbn}!`
+      )
     } else {
-      res.status(404).json({message: 'Could not find a review made by this user!'})
+      res
+        .status(404)
+        .json({ message: 'Could not find a review made by this user!' })
     }
   } else {
-    res.status(404).json({message: 'Could not find a book matching input isbn'})
+    res
+      .status(404)
+      .json({ message: 'Could not find a book matching input isbn' })
   }
 })
 
